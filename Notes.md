@@ -1,4 +1,4 @@
-beneficial## Ruby views
+you'rebeneficial## Ruby views
 
 ```erb
 <%= embedded ruby %>
@@ -562,3 +562,82 @@ This will utilize the javascript alert box to confirm if you want to delete some
 
 
 ### DRY - Don't Repeat Yourself  Code
+
+
+```rb
+class ArticlesController < ApplicationController
+  before_action :set_article, only: [:show, :edit, :update, :destroy]
+  ...
+  private
+  def set_article
+    @article = Article.find(params[:id])
+  end
+end
+```
+This method can be used within our class and can replace the other areas where we fetch the article based on the id passed into the url.
+
+Setting the `before_action` at the top of the class will execute the given method before anything else is done for any method. Adding the only parameter will make it so that the `:set_article` method only gets executed for only the given list of actions.
+
+
+```rb
+class ArticlesController < ApplicationController
+  ...
+  private
+  def article_params
+    params.require(:article).permit(:title, :Description)
+  end
+end
+```
+This new private method can be used inside the update/create actions when whitelisting fields to simplify/shorten code.
+
+> NOTE: the private key word is only necessary once i included it in this snippet to indicate that it would be included after set_article.
+
+> NOTE: private should always be included at the BOTTOM of your controller because everything beneath it will be marked as private.
+
+
+#### DRY views using partials
+
+Partial files start with a `_` ie `_messages.html.erb`
+
+To render a partial is using embedded ruby tags
+
+```html
+<%= render 'layouts/messages' %>
+```
+
+We do not need to include the `_` when rendering the partial because Ruby is smart enough to interpret it without one.
+
+
+`_messages.html.erb`
+```html
+<% flash.each do |name,msg| %>
+  <%= msg %>
+<% end %>
+```
+
+
+What we want to do now is create a form partial `_form.html.erb`
+We will add the common code from the edit/create template.
+We will be using the code from the edit template because its using the `@article` instance
+
+```html
+<%= form_with(model: @article, local: true)  do |f| %>
+  <p>
+    <%= f.label :title %>
+    <br/>
+    <%= f.text_field :title %>
+  </p>
+  <p>
+    <%= f.label :description %>
+    <br/>
+    <%= f.text_area :description %>
+  </p>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+```
+
+So now in our edit and create template we will use the render tag. If you're creating the partial within the same folder as the view using it you just have to reference the name of the partial.
+
+Because both the view and edit views are using the `@article` variable this partial will work as expected.
